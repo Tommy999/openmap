@@ -1,0 +1,299 @@
+{% extends 'index.html' %}
+{% block map %}
+<div id='map' class="map"></div>
+
+
+<script>
+
+
+var url_vtk = 'http://192.168.17.33:6080/arcgis/rest/services/VTK/MapServer';
+var url_gts = 'http://192.168.17.33:6080/arcgis/rest/services/GTS/MapServer';
+var url_notes = 'http://192.168.17.32:6080/arcgis/rest/services/Notes_temp/MapServer';
+var url_notes_wfs = 'http://192.168.17.32:6080/arcgis/services/Notes_temp/MapServer/WFSServer'
+
+
+
+
+
+osm = new ol.layer.Tile({source: new ol.source.OSM()});
+
+
+var url = 'http://localhost:8080/geoserver/wfs?service=wfs&' +
+        'version=1.1.0&request=GetFeature&typename=api_worspace:mp_dyn&' +
+        'outputFormat=text/javascript&format_options=callback:getJson'
+
+var url = 'http://localhost:8080/geoserver/wfs?service=wfs&' +
+        'version=1.1.0&request=GetFeature&typename=api_worspace:test&' +
+        'outputFormat=text/javascript&format_options=callback:loadFeatures';
+
+
+function testAjax() {
+
+    var geojsonFormat = new ol.format.GeoJSON();
+    alert('sdaf');
+
+    function processJSON(data) {
+
+        alert('REAACHED!')
+
+    };
+
+    var vectorSource = new ol.source.Vector({
+        url: url,
+        loader: function(extent, resolution, projection) {
+            var url = 'http://localhost:8080/geoserver/wfs?service=wfs&' +
+                    'version=1.1.0&request=GetFeature&typename=api_workspace:mp_dyn&' +
+                    'outputFormat=text/javascript&format_options=callback:loadFeatures';
+
+            // use jsonp: false to prevent jQuery from adding the "callback"
+            // parameter to the URL
+            $.ajax({url: url, dataType: 'jsonp', jsonp: false});
+        },
+        strategy: ol.loadingstrategy.tile(ol.tilegrid.createXYZ({
+            maxZoom: 19
+        }))
+    });
+
+    window.loadFeatures = function(response) {
+        vectorSource.addFeatures(geojsonFormat.readFeatures(response));
+    };
+
+
+    var vector = new ol.layer.Vector({
+        source: vectorSource,
+        style: new ol.style.Style({
+            image: new ol.style.Circle({
+                radius: 5,
+                fill: new ol.style.Fill({color: '#666666'}),
+                stroke: new ol.style.Stroke({color: '#bada55', width: 1})
+            })
+        })
+    });
+
+    mm.addLayer(vector);
+    alert('REAACHED!');
+
+
+    var count = 25;
+    var features = new Array(count);
+    var e = 18000000;
+    for (var i = 0; i < count; ++i) {
+        features[i] = new ol.Feature({
+            'geometry': new ol.geom.Point(
+                    [2 * e * Math.random() - e, 2 * e * Math.random() - e]),
+            'i': i,
+            'size': i % 2 ? 10 : 20
+        });
+    }
+
+
+    var styles = {
+        '10': new ol.style.Style({
+            image: new ol.style.Circle({
+                radius: 5,
+                fill: new ol.style.Fill({color: '#222222'}),
+                stroke: new ol.style.Stroke({color: '#bada55', width: 1})
+            })
+        }),
+        '20': new ol.style.Style({
+            image: new ol.style.Circle({
+                radius: 10,
+                fill: new ol.style.Fill({color: '#222222'}),
+                stroke: new ol.style.Stroke({color: '#bada55', width: 1})
+            })
+        })
+    };
+
+    var vs= new ol.source.Vector({
+        features: features
+    });
+    var vec= new ol.layer.Vector({
+        source: vs,
+        style: function(feature, resolution) {
+            return styles[feature.get('size')];
+        }
+    });
+
+
+    mm.addLayer(vec);
+
+
+
+
+
+
+    /*
+        $.ajax({
+            url: url,
+            dataType: 'json',
+            //data:{"service":"wfs", "version":"1.1.0", "request":"GetFeature", "typename":"api_worspace:mp_dyn", "outputFormat": "application/json"},
+            success: function (response) {
+                alert("Details saved successfully!!!");
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                alert(xhr.status);
+                alert(thrownError);
+            }
+        });
+
+        */
+
+};
+
+
+
+function testWFS() {
+
+
+    /*
+    var url = 'http://localhost:8080/geoserver/wfs?service=wfs&' +
+            'version=1.1.0&request=GetFeature&typename=api_workspace:mp_dyn&' +
+            'outputFormat=text/javascript&format_options=callback:loadFeatures';
+
+    var vectorSourceWFS = new ol.source.Vector({
+        format: new ol.format.GeoJSON(),
+        url: function(extent, resolution, projection) {
+            return 'http://localhost:8080/geoserver/wfs?service=wfs&' +
+                    'version=1.1.0&request=GetFeature&typename=api_workspace:mp_dyn&' +
+                    'outputFormat=application/json';
+        },
+        strategy: ol.loadingstrategy.tile(ol.tilegrid.createXYZ({
+            maxZoom: 19
+        }))
+    });
+
+
+    var vectorWFS = new ol.layer.Vector({
+        source: vectorSourceWFS,
+        style: new ol.style.Style({
+            stroke: new ol.style.Circle({
+
+
+                radius: 5,
+                fill: new ol.style.Fill({color: 'rgba(0, 0, 255, 1.0)'}),
+                stroke: new ol.style.Stroke({color: '#bada55', width: 1})
+            })
+        })
+    });
+
+    var vectorSource = new ol.source.Vector({
+        url: url,
+        loader: function(extent, resolution, projection) {
+            var url = 'http://localhost:8080/geoserver/wfs?service=wfs&' +
+                    'version=1.1.0&request=GetFeature&typename=api_workspace:mp_dyn&' +
+                    'outputFormat=text/javascript&format_options=callback:loadFeatures';
+
+            // use jsonp: false to prevent jQuery from adding the "callback"
+            // parameter to the URL
+            $.ajax({url: url, dataType: 'jsonp', jsonp: false});
+        },
+        strategy: ol.loadingstrategy.tile(ol.tilegrid.createXYZ({
+            maxZoom: 19
+        }))
+    });
+     */
+    var vectorSourcewfs = new ol.source.Vector({
+        format: new ol.format.GeoJSON(),
+        url:'http://localhost:8080/geoserver/wfs?service=wfs&' +
+            'version=1.1.0&request=GetFeature&typename=api_workspace:mp_dyn&' +
+            'outputFormat=application/json',
+        strategy: ol.loadingstrategy.tile(ol.tilegrid.createXYZ({
+            maxZoom: 19
+        }))
+    });
+
+    var vectorwfs = new ol.layer.Vector({
+        source: vectorSourcewfs,
+        style: new ol.style.Style({
+            image: new ol.style.Circle({
+                radius: 5,
+                fill: new ol.style.Fill({color: '#666666'}),
+                stroke: new ol.style.Stroke({color: '#bada55', width: 1})
+            })
+        })
+    });
+
+
+
+
+    mm.addLayer(vectorwfs);
+    //alert();
+
+};
+
+$("#but").click(function() {
+
+    testAjax();
+
+
+});
+
+$("#but2").click(function(){
+
+    testWFS();
+
+});
+
+var layers = [
+      osm,
+      new ol.layer.Tile({
+        source: new ol.source.TileArcGISRest({
+          url: url_gts
+        })
+      }),
+       new ol.layer.Tile({
+        source: new ol.source.TileArcGISRest({
+          url: url_notes
+        })
+      })];
+
+
+
+var mm = new ol.Map({
+    layers: layers,
+    view: new ol.View({
+      center: [0, 0],
+      zoom: 2
+    }),
+    target: 'map'
+  });
+
+
+//----------------------------------------------------
+
+var point = new ol.style.Style({
+    image: new ol.style.Circle({
+        radius: 5,
+        fill: new ol.style.Fill({color: 'white'}),
+        stroke: new ol.style.Stroke({color: '#bada55', width: 1})
+    })
+});
+
+
+var vspoint= new ol.source.Vector({
+
+});
+var vecpoint= new ol.layer.Vector({
+    source: vspoint
+
+});
+mm.addLayer(vecpoint);
+
+mm.on('singleclick', function (evt) {
+
+
+    var pp = new ol.geom.Point([evt.coordinate[0], evt.coordinate[1]]);
+    var iconFeature = new ol.Feature({
+        geometry: pp
+
+    });
+    //getSource().addFeatures
+
+    vecpoint.getSource().addFeatures(iconFeature);
+    var featuressss = vspoint.getFeatures();
+
+});
+
+</script>
+
+{% endblock %}

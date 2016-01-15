@@ -1,0 +1,48 @@
+
+{% extends 'index.html' %}
+
+{% block map %}
+<div id='map' class="map"></div>
+
+
+<script>
+    var map = new OpenLayers.Map('map');
+
+map.allOverlays = true;
+
+var layer3 = new OpenLayers.Layer.Vector(
+            "Stavros Features",
+            {
+                strategies: [new OpenLayers.Strategy.Fixed()]
+                , projection: new OpenLayers.Projection("EPSG:4326")
+                , protocol: new OpenLayers.Protocol.WFS({
+                    version: "1.1.0",
+                    url: "http://localhost:8081/geoserver/wfs",
+                    featurePrefix: 'api_worspace',
+                    featureType: "mp_dyn",
+                    featureNS: "http://localhost:8080/geoserver/api_worspace",
+                    geometryName: "the_geom"
+                })
+            });
+
+
+
+ layer1 = new OpenLayers.Layer.ArcGIS93Rest("ArcGIS Server Layer",
+    "http://192.168.17.32:6080/arcgis/rest/services/VTK/MapServer/export",
+            {layers: "show:0,1", FORMAT:"png", srs:4326},{singleTile: true},{transparent: true},{isBaseLayer:false});
+
+ layer2 = new OpenLayers.Layer.ArcGIS93Rest("ArcGIS Server Layer",
+    "http://192.168.17.32:6080/arcgis/rest/services/GTS/MapServer/export",
+            {layers: "show:0,1,2,3,4", FORMAT:"png", srs:4326},{singleTile: true},{transparent: true},{isBaseLayer:false});
+
+
+    //map.addLayers([layer1, layer2]);
+    map.addLayers([layer3]);
+     map.addControl(new OpenLayers.Control.LayerSwitcher());
+    map.zoomToMaxExtent();
+
+    alert('reached');
+</script>
+
+{% endblock %}
+
