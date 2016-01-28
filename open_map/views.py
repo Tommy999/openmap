@@ -10,6 +10,11 @@ from urlparse import urlparse
 import psycopg2
 
 
+def angular(request):
+
+    return render(request, 'angular.html')
+
+
 def index(request):
 
     return render(request, 'index.html')

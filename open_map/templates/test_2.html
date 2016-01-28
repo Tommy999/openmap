@@ -5,15 +5,10 @@
 
 <script>
 
-
 var url_vtk = 'http://192.168.17.33:6080/arcgis/rest/services/VTK/MapServer';
 var url_gts = 'http://192.168.17.33:6080/arcgis/rest/services/GTS/MapServer';
 var url_notes = 'http://192.168.17.32:6080/arcgis/rest/services/Notes_temp/MapServer';
 var url_notes_wfs = 'http://192.168.17.32:6080/arcgis/services/Notes_temp/MapServer/WFSServer'
-
-
-
-
 
 osm = new ol.layer.Tile({source: new ol.source.OSM()});
 
@@ -26,11 +21,10 @@ var url = 'http://localhost:8080/geoserver/wfs?service=wfs&' +
         'version=1.1.0&request=GetFeature&typename=api_worspace:test&' +
         'outputFormat=text/javascript&format_options=callback:loadFeatures';
 
-
 function testAjax() {
 
     var geojsonFormat = new ol.format.GeoJSON();
-    alert('sdaf');
+
 
     function processJSON(data) {
 
@@ -71,7 +65,6 @@ function testAjax() {
     });
 
     mm.addLayer(vector);
-    alert('REAACHED!');
 
 
     var count = 25;
@@ -139,8 +132,6 @@ function testAjax() {
         */
 
 };
-
-
 
 function testWFS() {
 
@@ -234,20 +225,120 @@ $("#but2").click(function(){
 
 });
 
+$("#but3").click(function(){
+
+    //var xhr = new XMLHttpRequest();
+    var urlwps = 'http://localhost:8080/geoserver/ows?'+
+            'service=WPS&'+
+            'version=1.0.0&'+
+            'request=GetCapabilities'
+
+    var urlwps = 'http://localhost:8080/geoserver/wps?'
+
+
+    $.ajax({
+        type: "POST",
+        url: urlwps,
+        dataType: "xml",
+        contentType: "application/xml",
+        data: '<?xml version=\"1.0\" encoding=\"UTF-8\"?><wps:Execute version=\"1.0.0\" service=\"WPS\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://www.opengis.net/wps/1.0.0\" xmlns:wfs=\"http://www.opengis.net/wfs\" xmlns:wps=\"http://www.opengis.net/wps/1.0.0\" xmlns:ows=\"http://www.opengis.net/ows/1.1\" xmlns:gml=\"http://www.opengis.net/gml\" xmlns:ogc=\"http://www.opengis.net/ogc\" xmlns:wcs=\"http://www.opengis.net/wcs/1.1.1\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xsi:schemaLocation=\"http://www.opengis.net/wps/1.0.0 http://schemas.opengis.net/wps/1.0.0/wpsAll.xsd\">'+
+        '<ows:Identifier>JTS:buffer</ows:Identifier>'+
+        '<wps:DataInputs>'+
+        '<wps:Input>'+
+        '<ows:Identifier>geom</ows:Identifier>'+
+        '<wps:Data>'+
+        '<wps:ComplexData mimeType="application/wkt"><![CDATA[POLYGON((0 0, 0 10, 10 10, 10 0, 0 0))]]></wps:ComplexData>'+
+        '</wps:Data>'+
+        '</wps:Input>'+
+        '<wps:Input>'+
+        '<ows:Identifier>distance</ows:Identifier>'+
+        '<wps:Data>'+
+        '<wps:LiteralData>10</wps:LiteralData>'+
+        '</wps:Data>'+
+        '</wps:Input>'+
+        '<wps:Input>'+
+        '<ows:Identifier>quadrantSegments</ows:Identifier>'+
+        '<wps:Data>'+
+        '<wps:LiteralData>2</wps:LiteralData>'+
+        '</wps:Data>'+
+        '</wps:Input>'+
+        '<wps:Input>'+
+        '<ows:Identifier>capStyle</ows:Identifier>'+
+        '<wps:Data>'+
+        '<wps:LiteralData>Round</wps:LiteralData>'+
+        '</wps:Data>'+
+        '</wps:Input>'+
+        '</wps:DataInputs>'+
+        '<wps:ResponseForm>'+
+        '<wps:RawDataOutput mimeType="application/wkt">'+
+        '<ows:Identifier>result</ows:Identifier>'+
+        '</wps:RawDataOutput>'+
+        '</wps:ResponseForm>'+
+        '</wps:Execute>'
+
+
+        ,
+        success: function (res) {
+            alert("XML: it works!");
+        },
+        error: function (res) {
+            alert("XML: not working! " + res.statusText);
+        }
+    });
+
+
+
+    /*
+    xhr.open('GET', urlwps, false);
+    xhr.setRequestHeader('User-Agent', 'XMLHTTP/1.0');
+    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    xhr.send(data);
+
+// 4. Если код ответа сервера не 200, то это ошибка
+    if (xhr.status != 200) {
+        // обработать ошибку
+        alert( xhr.status + ': ' + xhr.statusText ); // пример вывода: 404: Not Found
+    } else {
+        // вывести результат
+        alert( xhr.responseText ); // responseText -- текст ответа.
+    }
+
+    $.ajax({
+        type: "POST",
+        url:urlwps,
+        dataType: "xml",
+        contentType: "application/xml",
+        data: "<Category><categoryId>007</categoryId><categoryName>Ajax</categoryName></Category>",
+        success: function (res) {
+            alert("XML: it works!");
+        },
+        error: function (res) {
+            alert("XML: not working! " + res.statusText);
+        }
+    });
+ */
+
+
+});
+
+
+
+
 var layers = [
       osm,
       new ol.layer.Tile({
         source: new ol.source.TileArcGISRest({
           url: url_gts
         })
-      }),
+      })];
+/*
        new ol.layer.Tile({
         source: new ol.source.TileArcGISRest({
           url: url_notes
         })
-      })];
+      })
 
-
+ */
 
 var mm = new ol.Map({
     layers: layers,
@@ -279,21 +370,72 @@ var vecpoint= new ol.layer.Vector({
 });
 mm.addLayer(vecpoint);
 
+
+
+var featuresDyn = [];
 mm.on('singleclick', function (evt) {
 
+    featuresDyn.push(new ol.Feature({
+        'geometry': new ol.geom.Point(
+                [evt.coordinate[0], evt.coordinate[1]])
+    }));
 
-    var pp = new ol.geom.Point([evt.coordinate[0], evt.coordinate[1]]);
-    var iconFeature = new ol.Feature({
-        geometry: pp
-
+    var vsDyn= new ol.source.Vector({
+        features: featuresDyn
     });
-    //getSource().addFeatures
+    var styleDyn = new ol.style.Style({
+        image: new ol.style.Circle({
+            radius: 5,
+            fill: new ol.style.Fill({color: '#222222'}),
+            stroke: new ol.style.Stroke({color: '#bada55', width: 1})
+        })
+    });
+    var vecDyn= new ol.layer.Vector({
+        source: vsDyn,
+        style: styleDyn
+    });
+    mm.addLayer(vecDyn);
 
-    vecpoint.getSource().addFeatures(iconFeature);
-    var featuressss = vspoint.getFeatures();
+
+
+    /*
+    var count = 25;
+    var features = new Array(count);
+    var e = 18000000;
+    for (var i = 0; i < count; ++i) {
+        features[i] = new ol.Feature({
+            'geometry': new ol.geom.Point(
+                    [evt.coordinate[0], evt.coordinate[1]])
+        });
+    };
+    var styles = {
+        '10': new ol.style.Style({
+            image: new ol.style.Circle({
+                radius: 5,
+                fill: new ol.style.Fill({color: '#222222'}),
+                stroke: new ol.style.Stroke({color: '#bada55', width: 1})
+            })
+        }),
+        '20': new ol.style.Style({
+            image: new ol.style.Circle({
+                radius: 10,
+                fill: new ol.style.Fill({color: '#222222'}),
+                stroke: new ol.style.Stroke({color: '#bada55', width: 1})
+            })
+        })
+    };
+    var vs= new ol.source.Vector({
+        features: features
+    });
+    var vec= new ol.layer.Vector({
+        source: vs,
+        style: styles[1]
+    });
+    mm.addLayer(vec);
+     */
 
 });
-
+//----------------------------------------------------
 </script>
 
 {% endblock %}

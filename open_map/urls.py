@@ -15,4 +15,6 @@ urlpatterns = patterns('',
 
     url(r'^test2/$',
         map_test2),
+    url(r'^angular/$',
+        angular),
 )
